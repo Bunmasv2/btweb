@@ -1,41 +1,35 @@
-// Giả sử bạn có model Product
-// const Product = require('../models/Product');
+const Product = require('../model/product');
 
-// Mảng tạm để lưu sản phẩm (thay thế database)
-let products = [];
-let nextId = 1;
+
 
 // Thêm sản phẩm
 const addProduct = async (req, res) => {
     try {
-        const { name, price, description, category, stock } = req.body;
+        const { name, price, description, category, stock, image } = req.body;
 
         // Validation
-        if (!name || !price) {
+        if (!name || !price || !category || !image) {
             return res.status(400).json({
                 success: false,
-                message: 'Tên và giá sản phẩm là bắt buộc'
+                message: 'Tên, giá, danh mục và ảnh là bắt buộc'
             });
         }
 
-        const newProduct = {
-            id: nextId++,
+        const newProduct = new Product({
             name,
-            price: parseFloat(price),
-            description: description || '',
-            category: category || 'Uncategorized',
-            stock: stock || 0,
-            createdAt: new Date()
-        };
+            price,
+            description,
+            category,
+            stock,
+            image
+        });
 
-        products.push(newProduct);
-
-        // Với database: await Product.create(newProduct);
+        const savedProduct = await newProduct.save();
 
         res.status(201).json({
             success: true,
             message: 'Thêm sản phẩm thành công',
-            data: newProduct
+            data: savedProduct
         });
     } catch (error) {
         res.status(500).json({
@@ -50,34 +44,29 @@ const addProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, description, category, stock } = req.body;
+        const { name, price, description, category, stock, image } = req.body;
 
-        const productIndex = products.findIndex(p => p.id === parseInt(id));
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (price !== undefined) updateData.price = price;
+        if (description !== undefined) updateData.description = description;
+        if (category !== undefined) updateData.category = category;
+        if (stock !== undefined) updateData.stock = stock;
+        if (image !== undefined) updateData.image = image;
 
-        if (productIndex === -1) {
+        const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
+
+        if (!updatedProduct) {
             return res.status(404).json({
                 success: false,
                 message: 'Không tìm thấy sản phẩm'
             });
         }
 
-        // Cập nhật thông tin
-        products[productIndex] = {
-            ...products[productIndex],
-            name: name || products[productIndex].name,
-            price: price ? parseFloat(price) : products[productIndex].price,
-            description: description !== undefined ? description : products[productIndex].description,
-            category: category || products[productIndex].category,
-            stock: stock !== undefined ? stock : products[productIndex].stock,
-            updatedAt: new Date()
-        };
-
-        // Với database: await Product.findByIdAndUpdate(id, updateData);
-
         res.status(200).json({
             success: true,
             message: 'Cập nhật sản phẩm thành công',
-            data: products[productIndex]
+            data: updatedProduct
         });
     } catch (error) {
         res.status(500).json({
@@ -92,19 +81,14 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
+        const deletedProduct = await Product.findByIdAndDelete(id);
 
-        const productIndex = products.findIndex(p => p.id === parseInt(id));
-
-        if (productIndex === -1) {
+        if (!deletedProduct) {
             return res.status(404).json({
                 success: false,
                 message: 'Không tìm thấy sản phẩm'
             });
         }
-
-        const deletedProduct = products.splice(productIndex, 1)[0];
-
-        // Với database: await Product.findByIdAndDelete(id);
 
         res.status(200).json({
             success: true,
@@ -123,6 +107,7 @@ const deleteProduct = async (req, res) => {
 // Lấy danh sách sản phẩm
 const getProducts = async (req, res) => {
     try {
+        const products = await Product.find();
         res.status(200).json({
             success: true,
             data: products
@@ -140,7 +125,7 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
     try {
         const { id } = req.params;
-        const product = products.find(p => p.id === parseInt(id));
+        const product = await Product.findById(id);
 
         if (!product) {
             return res.status(404).json({
