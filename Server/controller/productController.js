@@ -43,14 +43,6 @@ const updateProduct = async (req, res) => {
         const { id } = req.params;
         const { name, price, description, category, stock, image } = req.body;
 
-        const updateData = {};
-        if (name !== undefined) updateData.name = name;
-        if (price !== undefined) updateData.price = price;
-        if (description !== undefined) updateData.description = description;
-        if (category !== undefined) updateData.category = category;
-        if (stock !== undefined) updateData.stock = stock;
-        if (image !== undefined) updateData.image = image;
-
         const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
 
         if (!updatedProduct) {
