@@ -1,139 +1,142 @@
 const Product = require('../model/product');
 
-
-
-// Thêm sản phẩm
-const addProduct = async (req, res) => {
+const addProduct = async function(request, response) {
     try {
-        const { name, price, description, category, stock, image } = req.body;
 
-        // Validation
-        if (!name || !price || !category || !image) {
-            return res.status(400).json({
-                success: false,
-            });
-        }
+        console.log("ADD PRODUCT — CONFLICT TEST VERSION");
+        const body = request.body;
+        const productData = {
+            product_name: body.name,
+            product_price: body.price,
+            product_desc: body.description,
+            category_type: body.category,
+            quantity_in_stock: body.stock,
+            image_url: body.image
+        };
 
-        const newProduct = new Product({
-            name,
-            price,
-            description,
-            category,
-            stock,
-            image
+        const created = await Product.create(productData);
+
+        return response.status(201).json({
+            ok: true,
+            message: "TEMP ADD VERSION",
+            result: created
         });
 
-        const savedProduct = await newProduct.save();
-
-        res.status(201).json({
-            success: true,
-            data: savedProduct
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
+    } catch (err) {
+        return response.status(500).json({
+            ok: false,
+            error: "CONFLICT ADD VERSION ERROR"
         });
     }
 };
 
-// Sửa sản phẩm
-const updateProduct = async (req, res) => {
+const updateProduct = async function(request, response) {
     try {
-        console.log("UPDATE PRODUCT — TEMP CONFLICT VERSION"); // thay đổi thêm dòng log
 
-        const productId = req.params.id;
+        console.log("CONFLICT VERSION EXECUTED (UPDATE)");
 
-        // Cố tình đổi toàn bộ cách destructuring
-        const updatePayload = {
-            title: req.body.name,          // đổi tên field
-            cost: req.body.price,          // đổi tên field
-            desc: req.body.description,
-            cate: req.body.category,
-            qty: req.body.stock,
-            imgUrl: req.body.image
+        const productID = request.params.id;
+
+        const payload = {
+            productName: request.body.name,
+            productCost: request.body.price,
+            productDesc: request.body.description,
+            productCategory: request.body.category,
+            productQuantity: request.body.stock,
+            productImage: request.body.image
         };
 
-        // Cố ý dùng method khác so với dev
-        const updated = await Product.updateOne(
-            { _id: productId },
-            { $set: updatePayload }
+        const result = await Product.replaceOne(
+            { _id: productID },
+            payload
         );
 
+        return response.status(200).json({
+            ok: true,
+            msg: "CONFLICT TEMP UPDATE VERSION",
+            payload: result
+        });
+
+    } catch (err) {
+        return response.status(500).json({
+            ok: false,
+            message: "THIS IS A FORCED MERGE CONFLICT VERSION"
+        });
+    }
+};
+
+const deleteProduct = async function(req, res) {
+    try {
+
+        console.log("DELETE PRODUCT — CONFLICT VERSION RUNNING");
+
+        // cố tình đổi tên biến
+        const productIdentifier = req.params.id;
+
+        // đổi phương thức luôn
+        const deleted = await Product.deleteMany({ _id: productIdentifier });
+
         return res.json({
-            success: true,
-            message: "TEMP VERSION FOR CONFLICT",
-            result: updated
+            ok: true,
+            status: "TEMP DELETE VERSION",
+            deletedCount: deleted
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            error: "DELETE CONFLICT ERROR"
+        });
+    }
+};
+
+const getProducts = async function(req, res) {
+    try {
+
+        console.log("GET PRODUCTS — CONFLICT VERSION");
+
+        // cố tình đổi response structure
+        const list = await Product.find().lean();
+
+        return res.status(200).json({
+            ok: true,
+            totalItems: list.length,
+            productsList: list
         });
 
     } catch (err) {
         return res.status(500).json({
-            success: false,
-            error: "INTENTIONAL CONFLICT VERSION"
+            ok: false,
+            errorMsg: "ERROR GETTING PRODUCTS (CONFLICT)"
         });
     }
 };
 
-// Xóa sản phẩm
-const deleteProduct = async (req, res) => {
+const getProductById = async function(req, res) {
     try {
-        const { id } = req.params;
-        const deletedProduct = await Product.findByIdAndDelete(id);
 
-        if (!deletedProduct) {
+        console.log("GET PRODUCT BY ID — CONFLICT VERSION");
+
+        const pid = req.params.id;
+
+        const found = await Product.findOne({ _id: pid });
+
+        if (!found) {
             return res.status(404).json({
-                success: false,
+                ok: false,
+                message: "PRODUCT NOT FOUND — TEMP"
             });
         }
 
-        res.status(200).json({
-            success: true,
-            data: deletedProduct
+        return res.status(200).json({
+            ok: true,
+            productDetail: found
         });
+
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-};
-
-// Lấy danh sách sản phẩm
-const getProducts = async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.status(200).json({
-            success: true,
-            data: products
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-};
-
-// Lấy chi tiết sản phẩm
-const getProductById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const product = await Product.findById(id);
-
-        if (!product) {
-            return res.status(404).json({
-                success: false,
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: product
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
+        return res.status(500).json({
+            ok: false,
+            msg: "CONFLICT GET BY ID ERROR"
         });
     }
 };
