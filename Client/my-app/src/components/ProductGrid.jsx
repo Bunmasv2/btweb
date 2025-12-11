@@ -10,7 +10,7 @@ const sampleProducts = [
     "category": "Laptop",
     "image": "/images/products/dell-inspiron-15.jpg",
     "stock": 12,
-    "description": "Laptop Dell Inspiron 15 với hiệu năng ổn định."
+    "description": "Cũm ngon"
   },
   {
     "id": 2,
@@ -19,7 +19,7 @@ const sampleProducts = [
     "category": "Điện thoại",
     "image": "/images/products/iphone-15-pro-max.jpg",
     "stock": 8,
-    "description": "iPhone 15 Pro Max mạnh mẽ với chip A17."
+    "description": "You are very sweet"
   },
   {
     "id": 3,
@@ -28,7 +28,7 @@ const sampleProducts = [
     "category": "Điện thoại",
     "image": "/images/products/galaxy-s24-ultra.jpg",
     "stock": 10,
-    "description": "S24 Ultra với S-Pen và camera zoom 10x."
+    "description": "Hẹ hẹ ... WHy"
   }
   // ... thêm các sản phẩm khác
 ];
@@ -77,8 +77,12 @@ const ProductGrid = () => {
                   {item.name}
                 </Card.Title>
 
-                <Card.Text className="text-danger fw-bold">
+                <Card.Text className="text-primary fw-bold">
                   {item.price.toLocaleString()} đ
+                </Card.Text>
+
+                <Card.Text className="fw-bold">
+                  {item.description.toLocaleString()}
                 </Card.Text>
 
                 <Card.Text className="text-muted" style={{ fontSize: "0.85rem" }}>
