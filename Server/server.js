@@ -12,7 +12,7 @@ const app = express()
 const port = process.env.SERVER_PORT
 
 app.use(express.json())
-app.use(cors)
+app.use(cors())
 app.use(cookieParser())
 
 const server = http.createServer(app)
