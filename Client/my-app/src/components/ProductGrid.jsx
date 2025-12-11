@@ -59,7 +59,7 @@ const ProductGrid = () => {
     category: "",
     stock: "",
     description: "",
-    imageFile: null
+    image: ""
   });
 
   // ======================
@@ -69,8 +69,9 @@ const ProductGrid = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://localhost:5001/api/products");
-      setProducts(res.data);
+      const res = await axios.get("http://localhost:2908/products");
+      console.log(res.data.data)
+      setProducts(res.data.data);
     } catch (err) {
       console.error("GET error:", err);
     }
@@ -78,41 +79,36 @@ const ProductGrid = () => {
   };
 
   const createProduct = async () => {
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("price", form.price);
-    formData.append("category", form.category);
-    formData.append("stock", form.stock);
-    formData.append("description", form.description);
-    if (form.imageFile) formData.append("imageFile", form.imageFile);
-
-    const res = await axios.post("https://localhost:5001/api/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+    const res = await axios.post("http://localhost:2908/products", {
+      name: form.name,
+      price: form.price,
+      category: form.category,
+      stock: form.stock,
+      description: form.description,
+      image: form.image
     });
 
     return res.data;
   };
 
   const updateProduct = async () => {
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("price", form.price);
-    formData.append("category", form.category);
-    formData.append("stock", form.stock);
-    formData.append("description", form.description);
-    if (form.imageFile) formData.append("imageFile", form.imageFile);
-
     const res = await axios.put(
-      `https://localhost:5001/api/products/${form.id}`,
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      `http://localhost:2908/products/${form.id}`,
+      {
+        name: form.name,
+        price: form.price,
+        category: form.category,
+        stock: form.stock,
+        description: form.description,
+        image: form.image
+      }
     );
 
     return res.data;
   };
 
   const deleteProduct = async (id) => {
-    await axios.delete(`https://localhost:5001/api/products/${id}`);
+    await axios.delete(`http://localhost:2908/products/${id}`);
   };
 
   // load first time
@@ -133,7 +129,7 @@ const ProductGrid = () => {
       category: "",
       stock: "",
       description: "",
-      imageFile: null
+      image: ""
     });
     setPreviewImage(null);
     setShowModal(true);
@@ -142,25 +138,22 @@ const ProductGrid = () => {
   const openEdit = (p) => {
     setEditing(p);
     setForm({
-      id: p.id,
+      id: p._id,
       name: p.name,
       price: p.price,
       category: p.category,
       stock: p.stock,
       description: p.description,
-      imageFile: null
+      image: p.image
     });
-    setPreviewImage(p.imageUrl);
+    setPreviewImage(p.image);
     setShowModal(true);
   };
 
-  const onFileChange = (e) => {
-    const file = e.target.files[0];
-    setForm({ ...form, imageFile: file });
-
-    if (file) {
-      setPreviewImage(URL.createObjectURL(file));
-    }
+  const onImageChange = (e) => {
+    const url = e.target.value;
+    setForm({ ...form, image: url });
+    setPreviewImage(url);
   };
 
   const handleSave = async () => {
@@ -198,11 +191,22 @@ const ProductGrid = () => {
     </div>
   ) : (
     <Row>
-      {products.map((p) => (
-        <Col md={3} className="mb-4" key={p.id}>
+      {products?.map((p) => (
+        <Col md={3} className="mb-4" key={p._id}>
           <Card className="product-card">
-            <Card.Img src={p.imageUrl} className="product-img" />
-
+{p.image.length < 100 ? (
+  /* TRƯỜNG HỢP ĐÚNG (< 100 ký tự): Hiển thị link ảnh online */
+<img 
+  src={p.image}
+  alt="Mô tả ngắn gọn về nội dung bức ảnh" 
+/>
+) : (
+  /* TRƯỜNG HỢP SAI (>= 100 ký tự): Xử lý trường hợp khác (ví dụ ảnh Base64 hoặc placeholder) */
+  <Card.Img 
+    src={p.image} 
+    className="product-img" 
+  />
+)}
             <Card.Body>
               <span className="category-badge">{p.category}</span>
 
@@ -217,7 +221,7 @@ const ProductGrid = () => {
                   <i className="bi bi-pencil-square"></i> Sửa
                 </Button>
 
-                <Button size="sm" variant="outline-danger" onClick={() => handleDelete(p.id)}>
+                <Button size="sm" variant="outline-danger" onClick={() => handleDelete(p._id)}>
                   <i className="bi bi-trash"></i> Xoá
                 </Button>
               </div>
@@ -276,8 +280,13 @@ const ProductGrid = () => {
           {/* Cột 2 */}
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label>Ảnh sản phẩm</Form.Label>
-              <Form.Control type="file" onChange={onFileChange} />
+              <Form.Label>Ảnh sản phẩm (URL)</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Nhập URL ảnh sản phẩm"
+                value={form.image}
+                onChange={onImageChange} 
+              />
 
               {previewImage && (
                 <img src={previewImage} className="modal-preview-img" />

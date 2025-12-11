@@ -40,36 +40,37 @@ const addProduct = async (req, res) => {
 // Sửa sản phẩm
 const updateProduct = async (req, res) => {
     try {
-        console.log("UPDATE PRODUCT — TEMP CONFLICT VERSION"); // thay đổi thêm dòng log
+        const { id } = req.params;
+        const { name, price, description, category, stock, image } = req.body;
 
-        const productId = req.params.id;
-
-        // Cố tình đổi toàn bộ cách destructuring
-        const updatePayload = {
-            title: req.body.name,          // đổi tên field
-            cost: req.body.price,          // đổi tên field
-            desc: req.body.description,
-            cate: req.body.category,
-            qty: req.body.stock,
-            imgUrl: req.body.image
-        };
-
-        // Cố ý dùng method khác so với dev
-        const updated = await Product.updateOne(
-            { _id: productId },
-            { $set: updatePayload }
+        const updatedProduct = await Product.findByIdAndUpdate(
+            id,
+            {
+                name,
+                price,
+                description,
+                category,
+                stock,
+                image
+            },
+            { new: true, runValidators: true }
         );
 
-        return res.json({
-            success: true,
-            message: "TEMP VERSION FOR CONFLICT",
-            result: updated
-        });
+        if (!updatedProduct) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
 
-    } catch (err) {
-        return res.status(500).json({
+        res.status(200).json({
+            success: true,
+            data: updatedProduct
+        });
+    } catch (error) {
+        res.status(500).json({
             success: false,
-            error: "INTENTIONAL CONFLICT VERSION"
+            error: error.message
         });
     }
 };
