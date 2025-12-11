@@ -11,36 +11,6 @@ import {
 import axios from "axios";
 import "../styles/ProductGrid.css";
 
-const sampleProducts = [
-  {
-    "id": 1,
-    "name": "Laptop Dell Inspiron 15",
-    "price": 15990000,
-    "category": "Laptop",
-    "image": "/images/products/dell-inspiron-15.jpg",
-    "stock": 12,
-    "description": "Cũm ngon"
-  },
-  {
-    "id": 2,
-    "name": "iPhone 15 Pro Max",
-    "price": 31990000,
-    "category": "Điện thoại",
-    "image": "/images/products/iphone-15-pro-max.jpg",
-    "stock": 8,
-    "description": "You are very sweet"
-  },
-  {
-    "id": 3,
-    "name": "Samsung Galaxy S24 Ultra",
-    "price": 28990000,
-    "category": "Điện thoại",
-    "image": "/images/products/galaxy-s24-ultra.jpg",
-    "stock": 10,
-    "description": "Hẹ hẹ ... WHy"
-  }
-];
-
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
